@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Analytics</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+
+    <nav class="navbar">
+
+        <div class="logo">
+
+            SmartExpense
+
+        </div>
+
+        <div class="nav-links">
+
+            <a href="/dashboard">
+                Dashboard
+            </a>
+
+            <a href="/budget">
+                Budget Planner
+            </a>
+
+            <a href="/analytics">
+                Analytics
+            </a>
+
+            <a href="/advisor">
+                Advisor
+            </a>
+
+            <a href="/goals">
+                Goals
+            </a>
+
+        </div>
+
+    </nav>
+
+
+    <div class="container">
+
+        <h1>Analytics</h1>
+
+
+        <!-- CHART SECTION -->
+
+        <div class="card">
+
+            <h2>Expense Analytics</h2>
+
+            <canvas id="expenseChart"></canvas>
+
+        </div>
+
+
+        <!-- SUMMARY SECTION -->
+
+        <div class="summary-section">
+
+            <h2>Monthly Summary</h2>
+
+            <div class="dashboard">
+
+                <div class="dashboard-card">
+
+                    <h3>Salary</h3>
+
+                    <p>₹{{ salary }}</p>
+
+                </div>
+
+                <div class="dashboard-card">
+
+                    <h3>Total Expenses</h3>
+
+                    <p>₹{{ total_expenses }}</p>
+
+                </div>
+
+                <div class="dashboard-card">
+
+                    <h3>Remaining Balance</h3>
+
+                    <p>₹{{ remaining_balance }}</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- FINANCIAL INSIGHTS -->
+
+        <div class="card insights-card">
+
+            <h2>Financial Insights</h2>
+
+            <div class="insights-container">
+
+                {% if highest_expense %}
+
+                    <div class="insight-box">
+
+                        <div class="insight-icon">
+
+                            💸
+
+                        </div>
+
+                        <div class="insight-content">
+
+                            <h3>
+
+                                Highest Spending
+
+                            </h3>
+
+                            <p>
+
+                                You spent the most on
+
+                                <strong>
+
+                                    {{ highest_expense.category }}
+
+                                </strong>
+
+                                — ₹{{ highest_expense.amount }}
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+
+                <div class="insight-box">
+
+                    <div class="insight-icon">
+
+                        📊
+
+                    </div>
+
+                    <div class="insight-content">
+
+                        <h3>
+
+                            Spending Percentage
+
+                        </h3>
+
+                        <p>
+
+                            <strong>
+
+                                {{ spending_percentage|round(1) }}%
+
+                            </strong>
+
+                            of your monthly salary has been used.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="insight-box">
+
+                    <div class="insight-icon">
+
+                        💡
+
+                    </div>
+
+                    <div class="insight-content">
+
+                        <h3>
+
+                            Smart Suggestion
+
+                        </h3>
+
+                        <p>
+
+                            {{ savings_message }}
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+<script>
+
+    const expenseData = {{ expenses | tojson }};
+
+    const labels = expenseData.map(
+        expense => expense.category
+    );
+
+    const amounts = expenseData.map(
+        expense => expense.amount
+    );
+
+    const ctx = document.getElementById(
+        'expenseChart'
+    );
+
+    new Chart(ctx, {
+
+        type: 'doughnut',
+
+        data: {
+
+            labels: labels,
+
+            datasets: [{
+
+                data: amounts,
+
+                backgroundColor: [
+
+                    '#4CAF50',
+                    '#36A2EB',
+                    '#FF6384',
+                    '#FFCE56',
+                    '#9966FF',
+                    '#FF9F40'
+
+                ],
+
+                borderWidth: 2
+            }]
+        },
+
+        options: {
+
+            responsive: true,
+
+            plugins: {
+
+                legend: {
+
+                    labels: {
+
+                        color: 'white',
+
+                        font: {
+
+                            size: 14
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+</script>
+
+</body>
+
+</html>

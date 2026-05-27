@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Budget Planner</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+
+    <nav class="navbar">
+
+        <div class="logo">
+
+            SmartExpense
+
+        </div>
+
+        <div class="nav-links">
+
+            <a href="/dashboard">
+                Dashboard
+            </a>
+
+            <a href="/budget">
+                Budget Planner
+            </a>
+
+            <a href="/analytics">
+                Analytics
+            </a>
+
+            <a href="/advisor">
+                Advisor
+            </a>
+
+            <a href="/goals">
+                Goals
+            </a>
+
+        </div>
+
+    </nav>
+
+
+    <!-- MAIN CONTAINER -->
+
+    <div class="container">
+
+        <h1 class="page-title">
+
+            Smart Budget Planner
+
+        </h1>
+
+        <p class="page-subtitle">
+
+            Spend intentionally. Save intelligently.
+
+        </p>
+
+
+        <!-- BUDGET OVERVIEW -->
+
+        <div class="budget-overview">
+
+            <div class="budget-main-card">
+
+                <h2>
+                    Monthly Salary
+                </h2>
+
+                <p>
+                    ₹{{ salary }}
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- 50/30/20 RULE -->
+
+        <div class="card">
+
+            <h2 class="section-heading">
+
+                Recommended Budget Structure
+
+            </h2>
+
+            <div class="rule-grid">
+
+                <div class="rule-card">
+
+                    <h3>
+                        Needs
+                    </h3>
+
+                    <p>
+                        ₹{{ needs_budget|round(0) }}
+                    </p>
+
+                    <span>
+                        50% of salary
+                    </span>
+
+                </div>
+
+
+                <div class="rule-card">
+
+                    <h3>
+                        Wants
+                    </h3>
+
+                    <p>
+                        ₹{{ wants_budget|round(0) }}
+                    </p>
+
+                    <span>
+                        30% of salary
+                    </span>
+
+                </div>
+
+
+                <div class="rule-card">
+
+                    <h3>
+                        Savings
+                    </h3>
+
+                    <p>
+                        ₹{{ savings_budget|round(0) }}
+                    </p>
+
+                    <span>
+                        20% of salary
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- CATEGORY BUDGETS -->
+
+        <div class="card">
+
+            <h2 class="section-heading">
+
+                Smart Category Allocation
+
+            </h2>
+
+            <div class="budget-grid">
+
+                <div class="budget-card">
+
+                    <h3>
+                        🍔 Food
+                    </h3>
+
+                    <p>
+                        Recommended:
+                        ₹{{ food_budget|round(0) }}
+                    </p>
+
+                    <span>
+
+                        Actual:
+                        ₹{{ food_spending }}
+
+                    </span>
+
+                </div>
+
+
+                <div class="budget-card">
+
+                    <h3>
+                        🏠 Rent
+                    </h3>
+
+                    <p>
+                        Recommended:
+                        ₹{{ rent_budget|round(0) }}
+                    </p>
+
+                    <span>
+
+                        Actual:
+                        ₹{{ rent_spending }}
+
+                    </span>
+
+                </div>
+
+
+                <div class="budget-card">
+
+                    <h3>
+                        🎬 Entertainment
+                    </h3>
+
+                    <p>
+                        Recommended:
+                        ₹{{ entertainment_budget|round(0) }}
+                    </p>
+
+                    <span>
+
+                        Actual:
+                        ₹{{ entertainment_spending }}
+
+                    </span>
+
+                </div>
+
+
+                <div class="budget-card">
+
+                    <h3>
+                        ✈️ Travel
+                    </h3>
+
+                    <p>
+                        Recommended:
+                        ₹{{ travel_budget|round(0) }}
+                    </p>
+
+                </div>
+
+
+                <div class="budget-card">
+
+                    <h3>
+                        🛍️ Shopping
+                    </h3>
+
+                    <p>
+                        Recommended:
+                        ₹{{ shopping_budget|round(0) }}
+                    </p>
+
+                </div>
+
+
+                <div class="budget-card">
+
+                    <h3>
+                        📈 Investments
+                    </h3>
+
+                    <p>
+                        Current:
+                        ₹{{ investment_spending }}
+                    </p>
+
+                    <span>
+
+                        Future wealth building
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- SMART ALERTS -->
+
+        <div class="card">
+
+            <h2 class="section-heading">
+
+                Smart Financial Alerts
+
+            </h2>
+
+            {% for alert in budget_alerts %}
+
+                <div class="alert-box">
+
+                    {{ alert }}
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- FINAL INSIGHT -->
+
+        <div class="final-budget-card">
+
+            <h2>
+
+                Budget Intelligence
+
+            </h2>
+
+            <p>
+
+                {% if investment_spending > 0 %}
+
+                    Your investment habits are excellent.
+                    Long-term investing is one of the strongest
+                    ways to build financial freedom.
+
+                {% elif food_spending > food_budget %}
+
+                    Your food spending is currently higher
+                    than recommended. Small reductions can
+                    significantly improve monthly savings.
+
+                {% else %}
+
+                    Your financial allocation looks balanced.
+                    Continue maintaining healthy spending habits.
+
+                {% endif %}
+
+            </p>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

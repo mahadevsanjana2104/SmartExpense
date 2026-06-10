@@ -723,3 +723,234 @@ gap:20px;
 
 
 }
+/* =========================
+LANDING PAGE
+========================= */
+
+.landing-container{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    position:relative;
+    text-align:center;
+}
+
+.overlay{
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,.3);
+}
+
+.hero-section{
+    position:relative;
+    z-index:2;
+}
+
+.hero-title{
+    font-size:4rem;
+    margin-bottom:20px;
+}
+
+.hero-subtitle{
+    font-size:1.2rem;
+    color:#cbd5e1;
+    margin-bottom:30px;
+}
+
+.hero-btn{
+    font-size:1.1rem;
+}
+
+/* =========================
+INSIGHTS
+========================= */
+
+.insights-container{
+    display:grid;
+    gap:20px;
+}
+
+.insights-card{
+    margin-top:20px;
+}
+
+/* =========================
+GOALS
+========================= */
+
+.goal-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+}
+
+.goal-title{
+    margin-bottom:5px;
+}
+
+.goal-subtitle{
+    color:#94a3b8;
+}
+
+.goal-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:20px;
+    margin-top:30px;
+}
+
+.goal-box{
+    background:#111827;
+    padding:20px;
+    border-radius:18px;
+}
+
+.goal-box h3{
+    margin-bottom:10px;
+}
+
+.goal-advice{
+    margin-top:30px;
+    padding:20px;
+    border-radius:18px;
+    background:#111827;
+    border-left:5px solid #22c55e;
+}
+
+.goal-extra-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+    margin-top:30px;
+}
+
+.goal-extra-card{
+    background:#111827;
+    padding:20px;
+    border-radius:18px;
+    text-align:center;
+}
+
+/* =========================
+BUDGET PAGE
+========================= */
+
+.budget-overview{
+    margin-bottom:30px;
+}
+
+.budget-main-card{
+    background:#111827;
+    padding:35px;
+    border-radius:25px;
+    text-align:center;
+}
+
+.budget-main-card p{
+    font-size:2rem;
+    font-weight:800;
+}
+
+.rule-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+}
+
+.rule-card{
+    background:#111827;
+    padding:25px;
+    border-radius:20px;
+    text-align:center;
+}
+
+.rule-card p{
+    font-size:1.7rem;
+    font-weight:700;
+    margin:10px 0;
+}
+
+.budget-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+}
+
+.budget-card{
+    background:#111827;
+    padding:25px;
+    border-radius:20px;
+}
+
+.alert-box{
+    background:#111827;
+    padding:20px;
+    border-radius:15px;
+    margin-bottom:15px;
+}
+
+.final-budget-card{
+    background:
+    linear-gradient(
+    135deg,
+    #172554,
+    #111827
+    );
+    padding:35px;
+    border-radius:25px;
+}
+
+/* =========================
+ADVISOR
+========================= */
+
+.advisor-header{
+    text-align:center;
+}
+
+.advisor-text{
+    flex:1;
+}
+
+/* =========================
+SUMMARY
+========================= */
+
+.summary-section{
+    margin:30px 0;
+}
+
+/* =========================
+EXPENSE LIST
+========================= */
+
+.expense-actions{
+    display:flex;
+    gap:10px;
+}
+
+.expense-info h3{
+    margin-bottom:5px;
+}
+
+/* =========================
+RESPONSIVE
+========================= */
+
+@media(max-width:900px){
+
+    .goal-grid,
+    .goal-extra-grid,
+    .budget-grid,
+    .rule-grid{
+        grid-template-columns:1fr;
+    }
+
+    .goal-top{
+        flex-direction:column;
+        gap:20px;
+        text-align:center;
+    }
+}

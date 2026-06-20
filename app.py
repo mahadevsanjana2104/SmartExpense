@@ -16,9 +16,71 @@ goal_name = ""
 goal_amount = 0
 
 
+
+# =========================
+# SMART EXPENSE CATEGORIZATION
+# =========================
+
+CATEGORY_KEYWORDS = {
+
+    "Food 🍔": {
+
+        "subcategories":[
+            "Restaurants",
+            "Online Food",
+            "Groceries"
+        ],
+
+        "keywords":[
+            "dominos",
+            "pizza",
+            "zomato",
+            "swiggy"
+        ]
+    },
+
+
+    "Utilities ⚡": {
+
+        "subcategories":[
+            "Electricity Bill",
+            "Water Bill",
+            "Gas Bill",
+            "Internet"
+        ],
+
+        "keywords":[
+            "electricity",
+            "water",
+            "gas",
+            "wifi"
+        ]
+    }
+
+}
+
+def categorize_expense(text):
+
+    text = text.lower()
+
+
+    for category, keywords in CATEGORY_KEYWORDS.items():
+
+        for word in keywords:
+
+            if word in text:
+
+                return category
+
+
+    return "Other"
+
+
+
 # =========================
 # LANDING PAGE
 # =========================
+
 
 @app.route("/")
 def landing():
@@ -28,8 +90,9 @@ def landing():
     )
 
 
+
 # =========================
-# DASHBOARD PAGE
+# DASHBOARD
 # =========================
 
 @app.route("/dashboard")
@@ -38,217 +101,65 @@ def dashboard():
     global salary
     global expenses
 
-    return render_template(
 
+    total_expenses = sum(
+        expense["amount"]
+        for expense in expenses
+    )
+
+
+    remaining_balance = salary - total_expenses
+
+
+    return render_template(
         "dashboard.html",
 
         salary=salary,
 
-        expenses=expenses
-    )
+        expenses=expenses,
 
-    # =========================
-# BUDGET PLANNER PAGE
-# =========================
+        total_expenses=total_expenses,
 
-@app.route("/budget")
-def budget():
-
-    global salary
-    global expenses
-
-    # =========================
-    # 50 / 30 / 20 RULE
-    # =========================
-
-    needs_budget = salary * 0.5
-
-    wants_budget = salary * 0.3
-
-    savings_budget = salary * 0.2
-
-
-    # CATEGORY SUGGESTIONS
-
-    food_budget = needs_budget * 0.3
-
-    rent_budget = needs_budget * 0.5
-
-    transport_budget = needs_budget * 0.2
-
-    entertainment_budget = wants_budget * 0.4
-
-    shopping_budget = wants_budget * 0.3
-
-    travel_budget = wants_budget * 0.3
-
-
-    # =========================
-    # ACTUAL CATEGORY SPENDING
-    # =========================
-
-    food_spending = 0
-
-    rent_spending = 0
-
-    entertainment_spending = 0
-
-    investment_spending = 0
-
-
-    for expense in expenses:
-
-        category = (
-
-            expense["category"].lower()
-        )
-
-        amount = expense["amount"]
-
-
-        if category == "food":
-
-            food_spending += amount
-
-
-        elif category == "rent":
-
-            rent_spending += amount
-
-
-        elif category == "entertainment":
-
-            entertainment_spending += amount
-
-
-        elif category in [
-
-            "investment",
-            "sip",
-            "stocks",
-            "mutual fund"
-
-        ]:
-
-            investment_spending += amount
-
-
-    # =========================
-    # SMART ALERTS
-    # =========================
-
-    budget_alerts = []
-
-
-    if food_spending > food_budget:
-
-        budget_alerts.append(
-
-            "⚠️ Your food expenses are above the recommended budget."
-        )
-
-
-    if entertainment_spending > entertainment_budget:
-
-        budget_alerts.append(
-
-            "🎬 Entertainment spending is higher than recommended."
-        )
-
-
-    if investment_spending > 0:
-
-        budget_alerts.append(
-
-            "📈 Excellent! You're actively investing for your future."
-        )
-
-
-    if not budget_alerts:
-
-        budget_alerts.append(
-
-            "✅ Your spending habits look financially healthy."
-        )
-
-
-    return render_template(
-
-        "budget.html",
-
-        salary=salary,
-
-        needs_budget=needs_budget,
-
-        wants_budget=wants_budget,
-
-        savings_budget=savings_budget,
-
-        food_budget=food_budget,
-
-        rent_budget=rent_budget,
-
-        transport_budget=transport_budget,
-
-        entertainment_budget=entertainment_budget,
-
-        shopping_budget=shopping_budget,
-
-        travel_budget=travel_budget,
-
-        food_spending=food_spending,
-
-        rent_spending=rent_spending,
-
-        entertainment_spending=entertainment_spending,
-
-        investment_spending=investment_spending,
-
-        budget_alerts=budget_alerts
+        remaining_balance=remaining_balance
     )
 
 
+
 # =========================
-# ANALYTICS PAGE
+# ANALYTICS
 # =========================
+
 
 @app.route("/analytics")
 def analytics():
 
-    global salary
-    global expenses
-
-    # TOTAL EXPENSES
 
     total_expenses = sum(
 
-        expense["amount"]
+        e["amount"]
 
-        for expense in expenses
+        for e in expenses
     )
 
-    # REMAINING BALANCE
 
-    remaining_balance = (
+    remaining_balance = salary - total_expenses
 
-        salary - total_expenses
-    )
-
-    # SPENDING PERCENTAGE
 
     spending_percentage = 0
+
 
     if salary > 0:
 
         spending_percentage = (
 
             total_expenses / salary
+
         ) * 100
 
 
-    # HIGHEST EXPENSE
 
     highest_expense = None
+
 
     if expenses:
 
@@ -256,32 +167,38 @@ def analytics():
 
             expenses,
 
-            key=lambda x: x["amount"]
+            key=lambda x:x["amount"]
+
         )
 
 
-    # SAVINGS MESSAGE
 
     if remaining_balance < 0:
 
         savings_message = (
 
             "You are overspending this month."
+
         )
+
 
     elif remaining_balance > 20000:
 
         savings_message = (
 
-            "Excellent savings this month!"
+            "Excellent savings habit!"
+
         )
+
 
     else:
 
         savings_message = (
 
-            "Your financial management looks stable."
+            "Your finances are stable."
+
         )
+
 
 
     return render_template(
@@ -301,50 +218,49 @@ def analytics():
         spending_percentage=spending_percentage,
 
         savings_message=savings_message
+
     )
 
 
+
+
 # =========================
-# ADVISOR PAGE
+# ADVISOR
 # =========================
+
 
 @app.route("/advisor")
 def advisor():
 
-    global salary
-    global expenses
-
-    # TOTAL EXPENSES
 
     total_expenses = sum(
 
-        expense["amount"]
+        e["amount"]
 
-        for expense in expenses
+        for e in expenses
+
     )
 
-    # REMAINING BALANCE
 
-    remaining_balance = (
+    remaining_balance = salary - total_expenses
 
-        salary - total_expenses
-    )
 
-    # SPENDING PERCENTAGE
 
     spending_percentage = 0
 
-    if salary > 0:
+
+    if salary:
 
         spending_percentage = (
 
             total_expenses / salary
+
         ) * 100
 
 
-    # HIGHEST EXPENSE
 
     highest_expense = None
+
 
     if expenses:
 
@@ -352,152 +268,110 @@ def advisor():
 
             expenses,
 
-            key=lambda x: x["amount"]
+            key=lambda x:x["amount"]
+
         )
 
 
-    # =========================
-    # SMART INVESTMENT DETECTION
-    # =========================
 
-    investment_keywords = [
-
-        "investment",
-        "sip",
-        "mutual fund",
-        "stocks",
-        "crypto",
-        "savings",
-        "fd",
-        "ppf",
-        "nps"
-    ]
+    messages = []
 
 
-    total_investments = 0
+
+    investment_total = 0
+
+
 
     for expense in expenses:
 
-        category_lower = (
 
-            expense["category"].lower()
-        )
+        if expense["category"] == "Investment 📈":
 
-        if category_lower in investment_keywords:
-
-            total_investments += (
-
-                expense["amount"]
-            )
+            investment_total += expense["amount"]
 
 
-    # =========================
-    # ADVISOR MESSAGES
-    # =========================
 
-    advisor_messages = []
-
-
-    # HIGH SPENDING WARNING
 
     if spending_percentage > 80:
 
-        advisor_messages.append(
+        messages.append(
 
-            "⚠️ Your expenses are very high compared to your salary."
+            "⚠️ Your spending is very high compared to income."
+
         )
 
 
-    # HIGHEST EXPENSE MESSAGE
 
     if highest_expense:
 
-        if highest_expense["category"].lower() in investment_keywords:
 
-            advisor_messages.append(
+        if highest_expense["category"] == "Investment 📈":
 
-                f"📈 Excellent! Your highest allocation is towards "
-                f"{highest_expense['category']}, which improves "
-                f"your long-term financial growth."
+            messages.append(
+
+                "📈 Great! Your biggest allocation is towards investments."
+
             )
 
         else:
 
-            advisor_messages.append(
+            messages.append(
 
-                f"💸 Your highest spending is on "
-                f"{highest_expense['category']}."
+                f"💸 Your highest spending is {highest_expense['category']}."
+
             )
 
 
-    # INVESTMENT MESSAGE
 
-    if total_investments > 0:
+    if investment_total > 0:
 
-        advisor_messages.append(
 
-            f"✅ Great job! You've invested ₹{total_investments} "
-            f"towards your future wealth."
+        messages.append(
+
+            f"✅ You invested ₹{investment_total}. "
+            "This improves your long term financial health."
+
         )
 
     else:
 
-        advisor_messages.append(
 
-            "💡 Consider investing part of your income into SIPs, "
-            "mutual funds, or emergency savings."
+        messages.append(
+
+            "💡 Consider starting SIPs or emergency savings."
+
         )
 
 
-    # LOW BALANCE WARNING
-
-    if remaining_balance < 5000:
-
-        advisor_messages.append(
-
-            "⚠️ Your remaining balance is low. "
-            "Try reducing unnecessary expenses."
-        )
 
 
-    # GOOD SAVINGS MESSAGE
+    health_score = 100
 
-    if remaining_balance > 20000:
-
-        advisor_messages.append(
-
-            "🚀 You have strong savings potential this month."
-        )
-
-
-    # HEALTH SCORE
-
-    financial_health_score = 100
 
     if spending_percentage > 90:
 
-        financial_health_score = 40
+        health_score = 40
 
-    elif spending_percentage > 75:
+    elif spending_percentage > 70:
 
-        financial_health_score = 60
+        health_score = 65
 
     elif spending_percentage > 50:
 
-        financial_health_score = 80
+        health_score = 80
+
+
 
 
     return render_template(
 
         "advisor.html",
 
-        advisor_messages=advisor_messages,
+        advisor_messages=messages,
 
         salary=salary,
 
         expenses=expenses,
-
-        total_expenses=total_expenses,
 
         remaining_balance=remaining_balance,
 
@@ -505,63 +379,50 @@ def advisor():
 
         spending_percentage=spending_percentage,
 
-        total_investments=total_investments,
+        financial_health_score=health_score,
 
-        financial_health_score=financial_health_score
+        total_investments=investment_total
+
     )
 
 
+
+
 # =========================
-# GOALS PAGE
+# GOALS
 # =========================
+
 
 @app.route("/goals")
 def goals():
 
-    global salary
-    global expenses
-    global goal_name
-    global goal_amount
-
-    # TOTAL EXPENSES
 
     total_expenses = sum(
 
-        expense["amount"]
+        e["amount"]
 
-        for expense in expenses
+        for e in expenses
+
     )
 
-    # REMAINING BALANCE
 
-    remaining_balance = (
-
-        salary - total_expenses
-    )
-
-    # SPENDING PERCENTAGE
-
-    spending_percentage = 0
-
-    if salary > 0:
-
-        spending_percentage = (
-
-            total_expenses / salary
-
-        ) * 100
+    remaining_balance = salary - total_expenses
 
 
-    # MONTHS NEEDED
 
     months_needed = None
 
+
+
     if remaining_balance > 0 and goal_amount > 0:
+
 
         months_needed = (
 
             goal_amount / remaining_balance
+
         )
+
 
 
     return render_template(
@@ -572,35 +433,244 @@ def goals():
 
         expenses=expenses,
 
-        total_expenses=total_expenses,
-
         remaining_balance=remaining_balance,
-
-        spending_percentage=spending_percentage,
 
         goal_name=goal_name,
 
         goal_amount=goal_amount,
 
         months_needed=months_needed
+
     )
+
+
+
+
+
+# =========================
+# BUDGET
+# =========================
+
+# =========================
+# SMART BUDGET PAGE
+# =========================
+
+@app.route("/budget")
+def budget():
+
+    global salary
+    global expenses
+
+
+    total_expenses = sum(
+        expense["amount"]
+        for expense in expenses
+    )
+
+
+    remaining_balance = salary - total_expenses
+
+
+
+    # =========================
+    # 50/30/20 RULE
+    # =========================
+
+    needs_budget = salary * 0.50
+
+    wants_budget = salary * 0.30
+
+    savings_budget = salary * 0.20
+
+
+
+    # =========================
+    # CATEGORY ALLOCATION
+    # =========================
+
+
+    food_budget = salary * 0.15
+
+    rent_budget = salary * 0.30
+
+    entertainment_budget = salary * 0.05
+
+    travel_budget = salary * 0.10
+
+    shopping_budget = salary * 0.10
+
+
+
+    # =========================
+    # SMART CATEGORY TRACKING
+    # =========================
+
+
+    food_spending = 0
+
+    rent_spending = 0
+
+    entertainment_spending = 0
+
+    investment_spending = 0
+
+
+
+    for expense in expenses:
+
+
+        category = expense["category"].lower()
+
+        amount = expense["amount"]
+
+
+
+        if "food" in category or "restaurant" in category:
+
+            food_spending += amount
+
+
+
+        elif "rent" in category:
+
+            rent_spending += amount
+
+
+
+        elif "movie" in category or "entertainment" in category:
+
+            entertainment_spending += amount
+
+
+
+        elif "investment" in category or "sip" in category:
+
+            investment_spending += amount
+
+
+
+
+    # =========================
+    # ALERT SYSTEM
+    # =========================
+
+
+    budget_alerts = []
+
+
+
+    if food_spending > food_budget:
+
+        budget_alerts.append(
+            "🍔 Food spending is above your recommended limit."
+        )
+
+
+    if rent_spending > rent_budget:
+
+        budget_alerts.append(
+            "🏠 Rent is taking a large portion of your income."
+        )
+
+
+    if investment_spending > 0:
+
+        budget_alerts.append(
+            "📈 Great job! You are building long-term wealth through investments."
+        )
+
+
+    if remaining_balance < salary*0.10:
+
+        budget_alerts.append(
+            "⚠️ Your remaining balance is low. Consider reducing unnecessary expenses."
+        )
+
+
+    if not budget_alerts:
+
+        budget_alerts.append(
+            "✅ Your budget allocation looks healthy."
+        )
+
+
+
+    return render_template(
+
+        "budget.html",
+
+        salary=salary,
+
+        expenses=expenses,
+
+        total_expenses=total_expenses,
+
+        remaining_balance=remaining_balance,
+
+
+        # 50/30/20
+
+        needs_budget=needs_budget,
+
+        wants_budget=wants_budget,
+
+        savings_budget=savings_budget,
+
+
+        # category budgets
+
+        food_budget=food_budget,
+
+        rent_budget=rent_budget,
+
+        entertainment_budget=entertainment_budget,
+
+        travel_budget=travel_budget,
+
+        shopping_budget=shopping_budget,
+
+
+        # actual spending
+
+        food_spending=food_spending,
+
+        rent_spending=rent_spending,
+
+        entertainment_spending=entertainment_spending,
+
+        investment_spending=investment_spending,
+
+
+        budget_alerts=budget_alerts
+
+    )
+
+
 
 
 # =========================
 # SAVE SALARY
 # =========================
 
+
 @app.route("/salary", methods=["POST"])
 def save_salary():
 
+
     global salary
+
 
     salary = float(
 
         request.form["salary"]
+
     )
 
+
     return redirect("/dashboard")
+
+
+
 
 
 # =========================
@@ -612,113 +682,147 @@ def add_expense():
 
     global expenses
 
+
     category = request.form["category"]
 
-    amount = float(
+    sub_category = request.form.get(
+        "sub_category",
+        "General"
+    )
 
+
+    amount = float(
         request.form["amount"]
     )
+
 
     expense = {
 
         "category": category,
 
+        "sub_category": sub_category,
+
         "amount": amount
     }
 
+
     expenses.append(expense)
+
 
     return redirect("/dashboard")
 
 
+
+
 # =========================
-# DELETE EXPENSE
+# DELETE
 # =========================
+
 
 @app.route("/delete/<int:index>")
 def delete_expense(index):
 
-    global expenses
 
     expenses.pop(index)
+
 
     return redirect("/dashboard")
 
 
+
+
+
 # =========================
-# EDIT EXPENSE PAGE
+# EDIT
 # =========================
+
 
 @app.route("/edit/<int:index>")
 def edit_expense(index):
 
-    global expenses
-
-    expense = expenses[index]
 
     return render_template(
 
         "edit.html",
 
-        expense=expense,
+        expense=expenses[index],
 
         index=index
+
     )
 
 
+
+
+
 # =========================
-# UPDATE EXPENSE
+# UPDATE
 # =========================
+
 
 @app.route("/update/<int:index>", methods=["POST"])
 def update_expense(index):
 
-    global expenses
 
-    updated_category = request.form["category"]
+    merchant = request.form["category"]
 
-    updated_amount = float(
+
+    amount=float(
 
         request.form["amount"]
+
     )
 
-    expenses[index]["category"] = (
 
-        updated_category
+    expenses[index]["merchant"]=merchant
+
+
+    expenses[index]["category"]=categorize_expense(
+
+        merchant
+
     )
 
-    expenses[index]["amount"] = (
 
-        updated_amount
-    )
+    expenses[index]["amount"]=amount
+
+
 
     return redirect("/dashboard")
+
+
+
 
 
 # =========================
 # SAVE GOAL
 # =========================
 
+
 @app.route("/goal", methods=["POST"])
 def save_goal():
 
+
     global goal_name
+
     global goal_amount
 
-    goal_name = request.form["goal_name"]
 
-    goal_amount = float(
+    goal_name=request.form["goal_name"]
+
+
+    goal_amount=float(
 
         request.form["goal_amount"]
+
     )
+
 
     return redirect("/goals")
 
 
-# =========================
-# RUN APPLICATION
-# =========================
 
-if __name__ == "__main__":
+
+if __name__=="__main__":
 
     app.run(debug=True)

@@ -1,372 +1,213 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
 
-    <meta charset="UTF-8">
+<title>Goals</title>
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>Goals</title>
-
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='style.css') }}">
+<link rel="stylesheet"
+href="{{url_for('static',filename='style.css')}}">
 
 </head>
 
+
 <body>
 
-    <!-- NAVBAR -->
 
-    <nav class="navbar">
+<nav class="navbar">
 
-        <div class="logo">
+<div class="logo">
+SmartExpense
+</div>
 
-            SmartExpense
 
-        </div>
+<div class="nav-links">
 
-        <div class="nav-links">
+<a href="/dashboard">Dashboard</a>
 
-            <a href="/dashboard">
-                Dashboard
-            </a>
+<a href="/budget">Budget</a>
 
-            <a href="/budget">
-                Budget Planner
-            </a>
+<a href="/analytics">Analytics</a>
 
-            <a href="/analytics">
-                Analytics
-            </a>
+<a href="/advisor">Advisor</a>
 
-            <a href="/advisor">
-                Advisor
-            </a>
+<a href="/goals">Goals</a>
 
-            <a href="/goals">
-                Goals
-            </a>
 
-        </div>
+</div>
 
-    </nav>
+</nav>
 
 
-    <!-- MAIN CONTAINER -->
 
-    <div class="container">
+<div class="container">
 
-        <h1>Savings Goals</h1>
 
+<h1>Savings Goals</h1>
 
-        <!-- HERO SECTION -->
 
-        <div class="advisor-hero">
 
-            <h2>
+<div class="card">
 
-                Build Your Financial Future
 
-            </h2>
+<h2>Create Goal</h2>
 
-            <p>
 
-                Set meaningful savings goals and track
-                how close you are to achieving them.
+<form action="/goal" method="POST">
 
-            </p>
 
-        </div>
+<input 
+name="goal_name"
+placeholder="Example: Buy Laptop"
+required>
 
 
-        <!-- GOAL FORM -->
+<input
+type="number"
+name="goal_amount"
+placeholder="Amount"
+required>
 
-        <div class="card">
 
-            <h2>Create Your Goal</h2>
+<button>
+Save Goal
+</button>
 
-            <form action="/goal"
-                  method="POST">
 
-                <input type="text"
-                       name="goal_name"
-                       placeholder="Example: Buy Laptop"
-                       required>
+</form>
 
-                <input type="number"
-                       name="goal_amount"
-                       placeholder="Target Amount"
-                       required>
 
-                <button type="submit">
+</div>
 
-                    Save Goal
 
-                </button>
 
-            </form>
 
-        </div>
 
+{% if goal_name %}
 
-        <!-- GOAL DISPLAY -->
 
-        {% if goal_name %}
 
-        <div class="goal-card">
+<div class="goal-card">
 
-            <!-- TOP SECTION -->
 
-            <div class="goal-top">
 
-                <div>
+<h2>
+🎯 {{goal_name}}
+</h2>
 
-                    <h2 class="goal-title">
 
-                        🎯 {{ goal_name }}
 
-                    </h2>
+<h3>
+Target:
+₹{{goal_amount}}
+</h3>
 
-                    <p class="goal-subtitle">
 
-                        Your personal savings target
 
-                    </p>
 
-                </div>
+<div class="goal-grid">
 
-                <div class="goal-amount">
 
-                    ₹{{ goal_amount }}
 
-                </div>
+<div class="goal-box">
 
-            </div>
+<h3>
+Current Savings
+</h3>
 
+<p>
+₹{{remaining_balance}}
+</p>
 
-            <!-- PROGRESS -->
+</div>
 
-            {% if goal_amount > 0 %}
 
-                {% set progress =
-                    (remaining_balance / goal_amount) * 100 %}
 
-            {% else %}
 
-                {% set progress = 0 %}
+<div class="goal-box">
 
-            {% endif %}
+<h3>
+Time Needed
+</h3>
 
+<p>
 
-            <div class="progress-section">
+{% if months_needed %}
 
-                <div class="progress-text">
+{{months_needed|round(1)}} months
 
-                    <span>
-                        Savings Progress
-                    </span>
+{% else %}
 
-                    <span>
+Not enough data
 
-                        {{ progress|round(1) }}%
+{% endif %}
 
-                    </span>
+</p>
 
-                </div>
+</div>
 
-                <div class="progress-container">
 
-                    <div class="progress-bar"
 
-                         style="width:
-                         {{ progress if progress < 100 else 100 }}%">
 
-                    </div>
 
-                </div>
+<div class="goal-box">
 
-            </div>
 
+<h3>
+Monthly Saving Ability
+</h3>
 
-            <!-- GOAL INSIGHTS -->
 
-            <div class="goal-grid">
+<p>
+₹{{remaining_balance}}
+</p>
 
-                <div class="goal-box">
 
-                    <h3>
-                        🎯 Goal Target
-                    </h3>
+</div>
 
-                    <p>
-                        ₹{{ goal_amount }}
-                    </p>
 
-                </div>
 
+</div>
 
-                <div class="goal-box">
 
-                    <h3>
-                        💰 Current Savings Power
-                    </h3>
 
-                    <p>
-                        ₹{{ remaining_balance }}
-                    </p>
 
-                </div>
 
+<div class="goal-advice">
 
-                <div class="goal-box">
 
-                    <h3>
-                        ⏳ Estimated Time
-                    </h3>
+{% if months_needed and months_needed < 6 %}
 
-                    <p>
+🚀 Amazing! Your goal is achievable quickly.
 
-                        {% if months_needed %}
 
-                            {{ months_needed|round(1) }} Months
+{% elif months_needed and months_needed < 12 %}
 
-                        {% else %}
+🔥 Stay consistent, you are on track.
 
-                            Not Enough Savings
 
-                        {% endif %}
+{% else %}
 
-                    </p>
+💡 Increase savings to reach faster.
 
-                </div>
 
+{% endif %}
 
-                <div class="goal-box">
 
-                    <h3>
-                        📅 Suggested Monthly Saving
-                    </h3>
+</div>
 
-                    <p>
 
-                        ₹{{ (goal_amount / 6)|round(0) }}
 
-                    </p>
+</div>
 
-                </div>
 
-            </div>
 
+{% endif %}
 
-            <!-- SMART MESSAGE -->
 
-            <div class="goal-advice">
 
-                {% if months_needed and months_needed <= 3 %}
+</div>
 
-                    🚀 Incredible progress!
-                    At your current savings rate,
-                    you can achieve your goal very quickly.
-
-                {% elif months_needed and months_needed <= 6 %}
-
-                    🔥 You're financially disciplined.
-                    Continue saving consistently
-                    to hit your target comfortably.
-
-                {% elif months_needed and months_needed <= 12 %}
-
-                    💡 You are on track,
-                    but reducing luxury expenses
-                    can help you achieve your goal faster.
-
-                {% else %}
-
-                    ⚠️ Your current savings rate
-                    may delay your goal significantly.
-                    Consider improving your monthly savings
-                    or reducing unnecessary spending.
-
-                {% endif %}
-
-            </div>
-
-
-            <!-- EXTRA FINANCIAL INSIGHTS -->
-
-            <div class="goal-extra-grid">
-
-                <div class="goal-extra-card">
-
-                    <h3>
-
-                        📊 Spending Percentage
-
-                    </h3>
-
-                    <p>
-
-                        {{ spending_percentage|round(1) }}%
-
-                    </p>
-
-                </div>
-
-
-                <div class="goal-extra-card">
-
-                    <h3>
-
-                        🧠 Financial Discipline
-
-                    </h3>
-
-                    <p>
-
-                        {% if spending_percentage < 40 %}
-
-                            Excellent
-
-                        {% elif spending_percentage < 70 %}
-
-                            Stable
-
-                        {% else %}
-
-                            Needs Improvement
-
-                        {% endif %}
-
-                    </p>
-
-                </div>
-
-
-                <div class="goal-extra-card">
-
-                    <h3>
-
-                        💵 Monthly Free Cash
-
-                    </h3>
-
-                    <p>
-
-                        ₹{{ remaining_balance }}
-
-                    </p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        {% endif %}
-
-    </div>
 
 </body>
 

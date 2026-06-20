@@ -3,178 +3,423 @@
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
-    <title>Dashboard</title>
+<title>Dashboard</title>
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='style.css') }}">
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='style.css') }}">
 
 </head>
 
+
 <body>
 
-    <!-- NAVBAR -->
 
-    <nav class="navbar">
+<nav class="navbar">
 
-        <div class="logo">
 
-            SmartExpense
+<div class="logo">
+SmartExpense
+</div>
 
-        </div>
 
-        <div class="nav-links">
+<div class="nav-links">
 
-            <a href="/dashboard">
-                Dashboard
-            </a>
 
-            <a href="/budget">
-                Budget Planner
-            </a>
+<a href="/dashboard">
+Dashboard
+</a>
 
-            <a href="/analytics">
-                Analytics
-            </a>
 
-            <a href="/advisor">
-                Advisor
-            </a>
+<a href="/budget">
+Budget Planner
+</a>
 
-            <a href="/goals">
-                Goals
-            </a>
 
-        </div>
+<a href="/analytics">
+Analytics
+</a>
 
-    </nav>
 
+<a href="/advisor">
+Advisor
+</a>
 
-    <!-- PAGE CONTENT -->
 
-    <div class="container">
+<a href="/goals">
+Goals
+</a>
 
-        <h1>Dashboard</h1>
 
+</div>
 
-        <!-- SALARY CARD -->
 
-        <div class="card">
+</nav>
 
-            <h2>Monthly Salary</h2>
 
-            <form action="/salary"
-                  method="POST">
 
-                <input type="number"
-                       name="salary"
-                       placeholder="Enter your monthly salary"
-                       required>
 
-                <button type="submit">
 
-                    Save Salary
+<div class="container">
 
-                </button>
 
-            </form>
 
-        </div>
+<h1>
+Smart Expense Dashboard
+</h1>
 
 
-        <!-- ADD EXPENSE -->
 
-        <div class="card">
 
-            <h2>Add Expense</h2>
 
-            <form action="/add"
-                  method="POST">
+<!-- SALARY INPUT -->
 
-                <input type="text"
-                       name="category"
-                       placeholder="Expense category"
-                       required>
 
-                <input type="number"
-                       name="amount"
-                       placeholder="Expense amount"
-                       required>
+<div class="card">
 
-                <button type="submit">
 
-                    Add Expense
+<h2>
+Enter Monthly Salary
+</h2>
 
-                </button>
 
-            </form>
+<form action="/salary"
+method="POST">
 
-        </div>
 
+<input 
+type="number"
+name="salary"
+placeholder="Enter salary"
+required>
 
-        <!-- EXPENSE LIST -->
 
-        <div class="card">
+<button>
+Save Salary
+</button>
 
-            <h2>Your Expenses</h2>
 
-            {% for expense in expenses %}
+</form>
 
-                <div class="expense-item">
 
-                    <div class="expense-info">
+</div>
 
-                        <h3>
 
-                            {{ expense.category }}
 
-                        </h3>
 
-                        <p>
 
-                            ₹{{ expense.amount }}
 
-                        </p>
 
-                    </div>
+<!-- SUMMARY CARDS -->
 
 
-                    <div class="expense-actions">
+<div class="dashboard">
 
-                        <a href="/edit/{{ loop.index0 }}">
 
-                            <button class="edit-btn">
 
-                                Edit
+<div class="dashboard-card">
 
-                            </button>
+<h3>
+Salary
+</h3>
 
-                        </a>
+<p>
 
-                        <a href="/delete/{{ loop.index0 }}">
+₹{{ salary }}
 
-                            <button class="delete-btn">
+</p>
 
-                                Delete
 
-                            </button>
+</div>
 
-                        </a>
 
-                    </div>
 
-                </div>
 
-            {% endfor %}
 
-        </div>
+<div class="dashboard-card">
 
-    </div>
+
+<h3>
+Total Spending
+</h3>
+
+
+<p>
+
+₹{{ total_expenses }}
+
+</p>
+
+
+</div>
+
+
+
+
+
+<div class="dashboard-card">
+
+
+<h3>
+Remaining Balance
+</h3>
+
+
+<p>
+
+₹{{ remaining_balance }}
+
+</p>
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- ADD EXPENSE -->
+
+
+<div class="card">
+
+
+<h2>
+Add Expense
+</h2>
+
+
+
+<form action="/add"
+method="POST">
+
+
+<input 
+type="text"
+name="category"
+placeholder="Example: Domino's, Uber, Rent"
+required>
+
+
+
+
+<input
+type="number"
+name="amount"
+placeholder="Amount"
+required>
+
+
+
+<button>
+Add Expense
+</button>
+
+
+</form>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- EXPENSE LIST -->
+
+
+<div class="card">
+
+
+<h2>
+Your Expenses
+</h2>
+
+
+
+{% if expenses %}
+
+
+
+{% for expense in expenses %}
+
+
+
+<div class="expense-item">
+
+
+
+<div class="expense-info">
+
+
+<h3>
+
+{{ expense.category }}
+
+</h3>
+
+
+<p>
+
+₹{{ expense.amount }}
+
+</p>
+
+
+
+</div>
+
+
+
+
+
+
+<div class="expense-actions">
+
+
+<a href="/edit/{{loop.index0}}">
+
+<button class="edit-btn">
+
+Edit
+
+</button>
+
+</a>
+
+
+
+
+
+<a href="/delete/{{loop.index0}}">
+
+
+<button class="delete-btn">
+
+Delete
+
+</button>
+
+
+</a>
+
+
+
+</div>
+
+
+
+
+</div>
+
+
+
+
+{% endfor %}
+
+
+
+{% else %}
+
+
+<p>
+No expenses added yet.
+</p>
+
+
+{% endif %}
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- QUICK INSIGHT -->
+
+
+<div class="card">
+
+
+<h2>
+Quick Financial Status
+</h2>
+
+
+
+
+{% if remaining_balance < 0 %}
+
+
+<div class="alert-box">
+
+⚠️ You have overspent your income.
+
+</div>
+
+
+
+{% elif remaining_balance < salary * 0.2 %}
+
+
+<div class="alert-box">
+
+⚠️ Your savings are low. Consider reducing expenses.
+
+</div>
+
+
+
+
+{% else %}
+
+
+<div class="alert-box">
+
+✅ Your financial balance looks healthy.
+
+</div>
+
+
+
+{% endif %}
+
+
+
+</div>
+
+
+
+
+
+</div>
+
 
 </body>
+
 
 </html>

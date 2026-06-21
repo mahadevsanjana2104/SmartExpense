@@ -412,6 +412,96 @@ Quick Financial Status
 
 
 </div>
+<!-- BUDGET PROGRESS TRACKER -->
+
+
+<div class="card">
+
+<h2>
+📊 Monthly Budget Progress
+</h2>
+
+
+<p style="color:#aaa">
+
+Track your spending before your money runs out.
+
+</p>
+
+
+<div class="budget-progress-grid">
+
+
+{% for item in budget_progress %}
+
+
+<div class="progress-card">
+
+
+<div class="progress-header">
+
+<h3>
+
+{{ item.category }}
+
+</h3>
+
+
+<span class="{{ item.color }}">
+
+{{ item.status }}
+
+</span>
+
+</div>
+
+
+
+<div class="progress-bar-container">
+
+
+<div class="progress-fill {{ item.color }}"
+
+style="width: {{ item.percentage }}%">
+
+</div>
+
+
+</div>
+
+
+
+<p>
+
+₹{{ item.spent|round(0) }}
+
+/
+
+₹{{ item.limit|round(0) }}
+
+</p>
+
+
+
+<p class="progress-percent">
+
+{{ item.percentage }}% used
+
+</p>
+
+
+
+</div>
+
+
+{% endfor %}
+
+
+
+</div>
+
+</div>
+
 
 
 </body>

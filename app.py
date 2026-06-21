@@ -16,12 +16,23 @@ goal_name = ""
 goal_amount = 0
 
 
+# =========================
+# LANDING PAGE
+# =========================
 
+@app.route("/")
+def landing():
+
+    return render_template(
+        "landing.html"
+    )
 # =========================
 # SMART EXPENSE CATEGORIZATION
 # =========================
 
+
 CATEGORY_KEYWORDS = {
+
 
     "Food 🍔": {
 
@@ -35,59 +46,170 @@ CATEGORY_KEYWORDS = {
             "dominos",
             "pizza",
             "zomato",
-            "swiggy"
+            "swiggy",
+            "restaurant",
+            "cafe",
+            "grocery",
+            "supermarket",
+            "food"
         ]
+
     },
 
 
-    "Utilities ⚡": {
+
+    "Transport 🚗": {
+
 
         "subcategories":[
+            "Cab",
+            "Fuel",
+            "Public Transport"
+        ],
+
+
+        "keywords":[
+
+            "uber",
+            "ola",
+            "rapido",
+            "petrol",
+            "fuel",
+            "metro",
+            "bus"
+
+        ]
+
+    },
+
+
+
+    "Rent 🏠": {
+
+
+        "subcategories":[
+
+            "House Rent"
+
+        ],
+
+
+        "keywords":[
+
+            "rent",
+            "house",
+            "flat"
+
+        ]
+
+    },
+
+
+
+    "Utilities 💡": {
+
+
+        "subcategories":[
+
             "Electricity Bill",
             "Water Bill",
             "Gas Bill",
             "Internet"
+
         ],
 
+
         "keywords":[
+
             "electricity",
             "water",
             "gas",
-            "wifi"
+            "wifi",
+            "internet",
+            "bill"
+
         ]
+
+    },
+
+
+
+    "Shopping 🛒": {
+
+
+        "keywords":[
+
+            "amazon",
+            "flipkart",
+            "myntra",
+            "clothes",
+            "shopping"
+
+        ]
+
+    },
+
+
+
+    "Entertainment 🎬": {
+
+
+        "keywords":[
+
+            "netflix",
+            "spotify",
+            "movie",
+            "cinema"
+
+        ]
+
+    },
+
+
+
+    "Investment 📈": {
+
+
+        "keywords":[
+
+            "sip",
+            "mutual",
+            "stocks",
+            "zerodha",
+            "groww",
+            "investment"
+
+        ]
+
     }
 
 }
 
+
+
+
+
 def categorize_expense(text):
+
 
     text = text.lower()
 
 
-    for category, keywords in CATEGORY_KEYWORDS.items():
 
-        for word in keywords:
+    for category,data in CATEGORY_KEYWORDS.items():
+
+
+        for word in data["keywords"]:
+
 
             if word in text:
 
                 return category
 
 
+
     return "Other"
 
-
-
-# =========================
-# LANDING PAGE
-# =========================
-
-
-@app.route("/")
-def landing():
-
-    return render_template(
-        "landing.html"
-    )
 
 
 
@@ -95,23 +217,140 @@ def landing():
 # DASHBOARD
 # =========================
 
+
 @app.route("/dashboard")
 def dashboard():
+
 
     global salary
     global expenses
 
 
+
     total_expenses = sum(
-        expense["amount"]
-        for expense in expenses
+        e["amount"]
+        for e in expenses
     )
 
 
-    remaining_balance = salary - total_expenses
+
+    remaining_balance = salary-total_expenses
+
+
+
+
+    category_budget={
+
+
+        "Food 🍔":salary*0.15,
+
+        "Transport 🚗":salary*0.10,
+
+        "Rent 🏠":salary*0.30,
+
+        "Shopping 🛒":salary*0.10,
+
+        "Entertainment 🎬":salary*0.05,
+
+        "Utilities 💡":salary*0.10,
+
+        "Investment 📈":salary*0.20
+
+
+    }
+
+
+
+
+
+    category_spending={}
+
+
+
+    for expense in expenses:
+
+
+        category=expense["category"]
+
+
+        category_spending[category]=category_spending.get(
+            category,
+            0
+        ) + expense["amount"]
+
+
+
+
+
+    budget_progress=[]
+
+
+
+    for category,limit in category_budget.items():
+
+
+        spent=category_spending.get(
+            category,
+            0
+        )
+
+
+
+        percentage=0
+
+
+        if limit>0:
+
+            percentage=(spent/limit)*100
+
+
+
+
+        if percentage<60:
+
+            status="Healthy"
+            color="green"
+
+
+        elif percentage<90:
+
+            status="Near Limit"
+            color="yellow"
+
+
+        else:
+
+            status="Overspent"
+            color="red"
+
+
+
+
+        budget_progress.append({
+
+
+            "category":category,
+
+            "spent":spent,
+
+            "limit":limit,
+
+            "percentage":round(
+                percentage,
+                1
+            ),
+
+            "status":status,
+
+            "color":color
+
+        })
+
+
 
 
     return render_template(
+
         "dashboard.html",
 
         salary=salary,
@@ -120,10 +359,11 @@ def dashboard():
 
         total_expenses=total_expenses,
 
-        remaining_balance=remaining_balance
+        remaining_balance=remaining_balance,
+
+        budget_progress=budget_progress
+
     )
-
-
 
 # =========================
 # ANALYTICS
@@ -134,70 +374,50 @@ def dashboard():
 def analytics():
 
 
-    total_expenses = sum(
-
+    total_expenses=sum(
         e["amount"]
-
         for e in expenses
     )
 
 
-    remaining_balance = salary - total_expenses
-
-
-    spending_percentage = 0
-
-
-    if salary > 0:
-
-        spending_percentage = (
-
-            total_expenses / salary
-
-        ) * 100
+    remaining_balance=salary-total_expenses
 
 
 
-    highest_expense = None
+    spending_percentage=0
+
+
+    if salary>0:
+
+        spending_percentage=(
+            total_expenses/salary
+        )*100
+
+
+
+    highest_expense=None
 
 
     if expenses:
 
-        highest_expense = max(
-
+        highest_expense=max(
             expenses,
-
             key=lambda x:x["amount"]
-
         )
 
 
 
     if remaining_balance < 0:
 
-        savings_message = (
+        savings_message="You are overspending this month."
 
-            "You are overspending this month."
+    elif remaining_balance > salary*0.3:
 
-        )
-
-
-    elif remaining_balance > 20000:
-
-        savings_message = (
-
-            "Excellent savings habit!"
-
-        )
-
+        savings_message="Excellent savings habit!"
 
     else:
 
-        savings_message = (
-
-            "Your finances are stable."
-
-        )
+        savings_message="Your finances are stable."
 
 
 
@@ -223,6 +443,8 @@ def analytics():
 
 
 
+
+
 # =========================
 # GOALS
 # =========================
@@ -232,30 +454,26 @@ def analytics():
 def goals():
 
 
-    total_expenses = sum(
-
+    total_expenses=sum(
         e["amount"]
-
         for e in expenses
-
     )
 
 
-    remaining_balance = salary - total_expenses
+    remaining_balance=salary-total_expenses
 
 
 
-    months_needed = None
+    months_needed=None
 
 
 
-    if remaining_balance > 0 and goal_amount > 0:
+    if remaining_balance>0 and goal_amount>0:
 
 
-        months_needed = (
-
-            goal_amount / remaining_balance
-
+        months_needed=(
+            goal_amount /
+            remaining_balance
         )
 
 
@@ -282,151 +500,140 @@ def goals():
 
 
 
+
 # =========================
 # BUDGET
 # =========================
 
-# =========================
-# SMART BUDGET PAGE
-# =========================
 
 @app.route("/budget")
 def budget():
 
-    global salary
-    global expenses
 
-
-    total_expenses = sum(
-        expense["amount"]
-        for expense in expenses
+    total_expenses=sum(
+        e["amount"]
+        for e in expenses
     )
 
 
-    remaining_balance = salary - total_expenses
+
+    remaining_balance=salary-total_expenses
 
 
 
-    # =========================
-    # 50/30/20 RULE
-    # =========================
+    needs_budget=salary*0.50
 
-    needs_budget = salary * 0.50
+    wants_budget=salary*0.30
 
-    wants_budget = salary * 0.30
-
-    savings_budget = salary * 0.20
+    savings_budget=salary*0.20
 
 
 
-    # =========================
-    # CATEGORY ALLOCATION
-    # =========================
 
+    food_budget=salary*0.15
 
-    food_budget = salary * 0.15
+    rent_budget=salary*0.30
 
-    rent_budget = salary * 0.30
+    entertainment_budget=salary*0.05
 
-    entertainment_budget = salary * 0.05
+    travel_budget=salary*0.10
 
-    travel_budget = salary * 0.10
-
-    shopping_budget = salary * 0.10
+    shopping_budget=salary*0.10
 
 
 
-    # =========================
-    # SMART CATEGORY TRACKING
-    # =========================
 
 
-    food_spending = 0
+    food_spending=0
 
-    rent_spending = 0
+    rent_spending=0
 
-    entertainment_spending = 0
+    entertainment_spending=0
 
-    investment_spending = 0
+    investment_spending=0
 
 
 
     for expense in expenses:
 
 
-        category = expense["category"].lower()
-
-        amount = expense["amount"]
+        category=expense["category"]
 
 
-
-        if "food" in category or "restaurant" in category:
-
-            food_spending += amount
+        amount=expense["amount"]
 
 
 
-        elif "rent" in category:
+        if category=="Food 🍔":
 
-            rent_spending += amount
-
-
-
-        elif "movie" in category or "entertainment" in category:
-
-            entertainment_spending += amount
+            food_spending+=amount
 
 
 
-        elif "investment" in category or "sip" in category:
+        elif category=="Rent 🏠":
 
-            investment_spending += amount
-
-
-
-
-    # =========================
-    # ALERT SYSTEM
-    # =========================
-
-
-    budget_alerts = []
+            rent_spending+=amount
 
 
 
-    if food_spending > food_budget:
+        elif category=="Entertainment 🎬":
+
+            entertainment_spending+=amount
+
+
+
+        elif category=="Investment 📈":
+
+            investment_spending+=amount
+
+
+
+
+
+
+    budget_alerts=[]
+
+
+
+    if food_spending>food_budget:
 
         budget_alerts.append(
-            "🍔 Food spending is above your recommended limit."
+            "🍔 Food spending is above limit."
         )
 
 
-    if rent_spending > rent_budget:
+
+    if rent_spending>rent_budget:
 
         budget_alerts.append(
-            "🏠 Rent is taking a large portion of your income."
+            "🏠 Rent is taking a large portion of income."
         )
 
 
-    if investment_spending > 0:
+
+    if investment_spending>0:
 
         budget_alerts.append(
-            "📈 Great job! You are building long-term wealth through investments."
+            "📈 Great job! You are investing."
         )
+
 
 
     if remaining_balance < salary*0.10:
 
         budget_alerts.append(
-            "⚠️ Your remaining balance is low. Consider reducing unnecessary expenses."
+            "⚠️ Low remaining balance."
         )
+
 
 
     if not budget_alerts:
 
         budget_alerts.append(
-            "✅ Your budget allocation looks healthy."
+            "✅ Budget looks healthy."
         )
+
+
 
 
 
@@ -443,16 +650,12 @@ def budget():
         remaining_balance=remaining_balance,
 
 
-        # 50/30/20
-
         needs_budget=needs_budget,
 
         wants_budget=wants_budget,
 
         savings_budget=savings_budget,
 
-
-        # category budgets
 
         food_budget=food_budget,
 
@@ -464,8 +667,6 @@ def budget():
 
         shopping_budget=shopping_budget,
 
-
-        # actual spending
 
         food_spending=food_spending,
 
@@ -480,9 +681,6 @@ def budget():
 
     )
 
-
-
-
 # =========================
 # SAVE SALARY
 # =========================
@@ -491,14 +689,11 @@ def budget():
 @app.route("/salary", methods=["POST"])
 def save_salary():
 
-
     global salary
 
 
-    salary = float(
-
+    salary=float(
         request.form["salary"]
-
     )
 
 
@@ -512,39 +707,48 @@ def save_salary():
 # ADD EXPENSE
 # =========================
 
+
 @app.route("/add", methods=["POST"])
 def add_expense():
 
     global expenses
 
 
-    category = request.form["category"]
 
-    sub_category = request.form.get(
-        "sub_category",
-        "General"
-    )
+    merchant=request.form["category"]
 
 
-    amount = float(
+    amount=float(
         request.form["amount"]
     )
 
 
-    expense = {
+    category=categorize_expense(
+        merchant
+    )
 
-        "category": category,
 
-        "sub_category": sub_category,
+    expense={
 
-        "amount": amount
+
+        "merchant":merchant,
+
+
+        "category":category,
+
+
+        "amount":amount
+
     }
+
 
 
     expenses.append(expense)
 
 
+
     return redirect("/dashboard")
+
 
 
 
@@ -599,23 +803,20 @@ def edit_expense(index):
 def update_expense(index):
 
 
-    merchant = request.form["category"]
+    merchant=request.form["category"]
 
 
     amount=float(
-
         request.form["amount"]
-
     )
+
 
 
     expenses[index]["merchant"]=merchant
 
 
     expenses[index]["category"]=categorize_expense(
-
         merchant
-
     )
 
 
@@ -637,9 +838,7 @@ def update_expense(index):
 @app.route("/goal", methods=["POST"])
 def save_goal():
 
-
     global goal_name
-
     global goal_amount
 
 
@@ -647,13 +846,13 @@ def save_goal():
 
 
     goal_amount=float(
-
         request.form["goal_amount"]
-
     )
 
 
     return redirect("/goals")
+
+
 
 
 

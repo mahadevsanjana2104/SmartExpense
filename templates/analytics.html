@@ -43,9 +43,12 @@
                 Analytics
             </a>
 
-
             <a href="/goals">
                 Goals
+            </a>
+
+            <a href="/logout">
+                Logout
             </a>
 
         </div>
@@ -221,7 +224,7 @@
 
 <script>
 
-    const expenseData = {{ expenses | tojson }};
+    const expenseData = {{ chart_data | tojson }};
 
     const labels = expenseData.map(
         expense => expense.category

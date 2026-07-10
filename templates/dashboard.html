@@ -50,6 +50,10 @@ Analytics
 Goals
 </a>
 
+<a href="/logout">
+Logout
+</a>
+
 
 </div>
 
@@ -289,7 +293,7 @@ Your Expenses
 <div class="expense-actions">
 
 
-<a href="/edit/{{loop.index0}}">
+<a href="/edit/{{expense.id}}">
 
 <button class="edit-btn">
 
@@ -303,7 +307,7 @@ Edit
 
 
 
-<a href="/delete/{{loop.index0}}">
+<a href="/delete/{{ expense.id }}">
 
 
 <button class="delete-btn">

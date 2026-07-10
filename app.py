@@ -1,15 +1,25 @@
 from flask import Flask, render_template, request, redirect
+from models import db, User, Income, Expense, Goal
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 
 app = Flask(__name__)
 
-# ======================================
-# GLOBAL VARIABLES
-# ======================================
+app.config["SECRET_KEY"] = "change-this-to-a-random-secret-key"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-salary = 0
-expenses = []
-goal_name = ""
-goal_amount = 0
+db.init_app(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+
+@login_manager.user_loader
+def load_user(user_id):
+
+    return User.query.get(int(user_id))
+
 
 
 # ======================================
@@ -75,6 +85,123 @@ def get_category(category_name):
 
     return "Other"
 
+#forgot password
+@app.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+
+    if request.method == "POST":
+
+        email = request.form["email"].strip().lower()
+
+        password = request.form["password"]
+
+        confirm = request.form["confirm_password"]
+
+        if password != confirm:
+
+            return "Passwords do not match."
+
+        user = User.query.filter_by(
+            email=email
+        ).first()
+
+        if not user:
+
+            return "User not found."
+
+        user.password = generate_password_hash(password)
+
+        db.session.commit()
+
+        return redirect("/login")
+
+    return render_template(
+        "forgot_password.html"
+    )
+
+
+#signup
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+
+    if request.method == "POST":
+
+        name = request.form["name"].strip()
+
+        email = request.form["email"].strip().lower()
+
+        password = request.form["password"]
+
+        confirm = request.form["confirm_password"]
+
+        # Passwords must match
+        if password != confirm:
+
+            return "Passwords do not match."
+
+        # Email already exists?
+        existing_user = User.query.filter_by(
+            email=email
+        ).first()
+
+        if existing_user:
+
+            return "Email already registered."
+
+        hashed_password = generate_password_hash(password)
+
+        new_user = User(
+
+            name=name,
+
+            email=email,
+
+            password=hashed_password
+
+        )
+
+        db.session.add(new_user)
+
+        db.session.commit()
+
+        return redirect("/login")
+
+    return render_template("signup.html")
+
+#login
+@app.route("/login", methods=["GET", "POST"])
+def login():
+
+    if request.method == "POST":
+
+        email = request.form["email"].strip().lower()
+
+        password = request.form["password"]
+
+        user = User.query.filter_by(
+            email=email
+        ).first()
+
+        if user and check_password_hash(
+            user.password,
+            password
+        ):
+
+            login_user(user)
+
+            return redirect("/dashboard")
+
+        return "Invalid email or password."
+
+    return render_template("login.html")
+@app.route("/logout")
+@login_required
+def logout():
+
+    logout_user()
+
+    return redirect("/")
+
 
 # ======================================
 # LANDING PAGE
@@ -91,13 +218,21 @@ def landing():
 # ======================================
 
 @app.route("/dashboard")
+@login_required
 def dashboard():
 
-    global salary
-    global expenses
+    income = Income.query.filter_by(
+        user_id=current_user.id
+    ).first()
+
+    salary = income.amount if income else 0
+
+    expenses = Expense.query.filter_by(
+        user_id=current_user.id
+    ).all()
 
     total_expenses = sum(
-        expense["amount"]
+        expense.amount
         for expense in expenses
     )
 
@@ -130,12 +265,12 @@ def dashboard():
     for expense in expenses:
 
         category = get_category(
-            expense["category"]
+            expense.category
         )
 
         if category in category_spending:
 
-            category_spending[category] += expense["amount"]
+            category_spending[category] += expense.amount
 
     budget_progress = []
 
@@ -192,15 +327,29 @@ def dashboard():
         budget_progress=budget_progress
 
     )
+
 # ======================================
 # ANALYTICS
 # ======================================
 
 @app.route("/analytics")
+@login_required
 def analytics():
 
+    # Current user's salary
+    income = Income.query.filter_by(
+        user_id=current_user.id
+    ).first()
+
+    salary = income.amount if income else 0
+
+    # Current user's expenses
+    expenses = Expense.query.filter_by(
+        user_id=current_user.id
+    ).all()
+
     total_expenses = sum(
-        expense["amount"]
+        expense.amount
         for expense in expenses
     )
 
@@ -209,6 +358,7 @@ def analytics():
     spending_percentage = 0
 
     if salary > 0:
+
         spending_percentage = (
             total_expenses / salary
         ) * 100
@@ -216,19 +366,31 @@ def analytics():
     highest_expense = None
 
     if expenses:
+
         highest_expense = max(
             expenses,
-            key=lambda x: x["amount"]
+            key=lambda expense: expense.amount
         )
 
     if remaining_balance < 0:
+
         savings_message = "You are overspending this month."
 
     elif remaining_balance > salary * 0.30:
+
         savings_message = "Excellent savings habit!"
 
     else:
+
         savings_message = "Your finances are stable."
+
+    chart_data = [
+    {
+        "category": expense.category,
+        "amount": expense.amount
+    }
+    for expense in expenses
+]
 
     return render_template(
 
@@ -246,32 +408,58 @@ def analytics():
 
         spending_percentage=spending_percentage,
 
-        savings_message=savings_message
+        savings_message=savings_message,
+
+        chart_data = chart_data
 
     )
-
 
 # ======================================
 # GOALS
 # ======================================
-
 @app.route("/goals")
+@login_required
 def goals():
 
+    # Salary
+    income = Income.query.filter_by(
+        user_id=current_user.id
+    ).first()
+
+    salary = income.amount if income else 0
+
+    # Expenses
+    expenses = Expense.query.filter_by(
+        user_id=current_user.id
+    ).all()
+
     total_expenses = sum(
-        expense["amount"]
+        expense.amount
         for expense in expenses
     )
 
     remaining_balance = salary - total_expenses
 
+    # Goal
+    goal = Goal.query.filter_by(
+        user_id=current_user.id
+    ).first()
+
+    goal_name = ""
+    goal_amount = 0
+
+    if goal:
+
+        goal_name = goal.goal_name
+        goal_amount = goal.goal_amount
+
     months_needed = None
 
     if remaining_balance > 0 and goal_amount > 0:
 
-        months_needed = (
-            goal_amount /
-            remaining_balance
+        months_needed = round(
+            goal_amount / remaining_balance,
+            1
         )
 
     return render_template(
@@ -298,12 +486,25 @@ def goals():
 # ======================================
 
 @app.route("/budget")
+@login_required
 def budget():
 
+    # Load the current user's salary
+    income = Income.query.filter_by(
+        user_id=current_user.id
+    ).first()
+
+    salary = income.amount if income else 0
+
+    expenses = Expense.query.filter_by(
+    user_id=current_user.id
+    
+    ).all()
+
     total_expenses = sum(
-        expense["amount"]
-        for expense in expenses
-    )
+    expense.amount
+    for expense in expenses
+)
 
     remaining_balance = salary - total_expenses
 
@@ -325,10 +526,10 @@ def budget():
     for expense in expenses:
 
         category = get_category(
-            expense["category"]
+            expense.category
         )
 
-        amount = expense["amount"]
+        amount = expense.amount
 
         if category == "Food":
             food_spending += amount
@@ -418,49 +619,53 @@ def budget():
 # ======================================
 
 @app.route("/salary", methods=["POST"])
+@login_required
 def save_salary():
 
-    global salary
+    amount = float(request.form["salary"])
 
-    try:
-        salary = float(request.form["salary"])
+    income = Income.query.filter_by(
+        user_id=current_user.id
+    ).first()
 
-        if salary < 0:
-            salary = 0
+    if income:
+        income.amount = amount
+    else:
+        income = Income(
+            amount=amount,
+            user_id=current_user.id
+        )
+        db.session.add(income)
 
-    except:
-        salary = 0
+    db.session.commit()
 
     return redirect("/dashboard")
-
 
 # ======================================
 # ADD EXPENSE
 # ======================================
 
 @app.route("/add", methods=["POST"])
+@login_required
 def add_expense():
-
-    global expenses
 
     category = request.form["category"].strip()
 
-    try:
-        amount = float(request.form["amount"])
+    amount = float(request.form["amount"])
 
-        if amount < 0:
-            amount = 0
+    expense = Expense(
 
-    except:
-        amount = 0
+        category=category,
 
-    expenses.append({
+        amount=amount,
 
-        "category": category,
+        user_id=current_user.id
 
-        "amount": amount
+    )
 
-    })
+    db.session.add(expense)
+
+    db.session.commit()
 
     return redirect("/dashboard")
 
@@ -469,24 +674,43 @@ def add_expense():
 # DELETE EXPENSE
 # ======================================
 
-@app.route("/delete/<int:index>")
-def delete_expense(index):
+@app.route("/delete/<int:id>")
+@login_required
+def delete_expense(id):
 
-    if 0 <= index < len(expenses):
+    expense = Expense.query.filter_by(
 
-        expenses.pop(index)
+        id=id,
+
+        user_id=current_user.id
+
+    ).first()
+
+    if expense:
+
+        db.session.delete(expense)
+
+        db.session.commit()
 
     return redirect("/dashboard")
-
 
 # ======================================
 # EDIT EXPENSE
 # ======================================
 
-@app.route("/edit/<int:index>")
-def edit_expense(index):
+@app.route("/edit/<int:id>")
+@login_required
+def edit_expense(id):
 
-    if index < 0 or index >= len(expenses):
+    expense = Expense.query.filter_by(
+
+        id=id,
+
+        user_id=current_user.id
+
+    ).first()
+
+    if not expense:
 
         return redirect("/dashboard")
 
@@ -494,9 +718,7 @@ def edit_expense(index):
 
         "edit.html",
 
-        expense=expenses[index],
-
-        index=index
+        expense=expense
 
     )
 
@@ -505,28 +727,29 @@ def edit_expense(index):
 # UPDATE EXPENSE
 # ======================================
 
-@app.route("/update/<int:index>", methods=["POST"])
-def update_expense(index):
+@app.route("/update/<int:id>", methods=["POST"])
+@login_required
+def update_expense(id):
 
-    if index < 0 or index >= len(expenses):
+    expense = Expense.query.filter_by(
+
+        id=id,
+
+        user_id=current_user.id
+
+    ).first()
+
+    if not expense:
 
         return redirect("/dashboard")
 
-    category = request.form["category"].strip()
+    expense.category = request.form["category"].strip()
 
-    try:
+    expense.amount = float(
+        request.form["amount"]
+    )
 
-        amount = float(request.form["amount"])
-
-        if amount < 0:
-            amount = 0
-
-    except:
-
-        amount = 0
-
-    expenses[index]["category"] = category
-    expenses[index]["amount"] = amount
+    db.session.commit()
 
     return redirect("/dashboard")
 
@@ -536,28 +759,41 @@ def update_expense(index):
 # ======================================
 
 @app.route("/goal", methods=["POST"])
+@login_required
 def save_goal():
-
-    global goal_name
-    global goal_amount
 
     goal_name = request.form["goal_name"].strip()
 
-    try:
+    goal_amount = float(
+        request.form["goal_amount"]
+    )
 
-        goal_amount = float(
-            request.form["goal_amount"]
+    goal = Goal.query.filter_by(
+        user_id=current_user.id
+    ).first()
+
+    if goal:
+
+        goal.goal_name = goal_name
+        goal.goal_amount = goal_amount
+
+    else:
+
+        goal = Goal(
+
+            goal_name=goal_name,
+
+            goal_amount=goal_amount,
+
+            user_id=current_user.id
+
         )
 
-        if goal_amount < 0:
-            goal_amount = 0
+        db.session.add(goal)
 
-    except:
-
-        goal_amount = 0
+    db.session.commit()
 
     return redirect("/goals")
-
 
 # ======================================
 # RUN APP
@@ -565,6 +801,7 @@ def save_goal():
 
 if __name__ == "__main__":
 
-    app.run(
-        debug=True
-    )
+    with app.app_context():
+        db.create_all()
+
+    app.run(debug=True)
